@@ -447,7 +447,7 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
 
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
 #if HAVE_SPMINTEREFACE_MAGICVALUE
-const uint16_t bootloader__do_spm[23+8] BOOTLIBLINK = {
+const uint16_t bootloader__do_spm[23+8+4] BOOTLIBLINK = {
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 28) & 0xf))<<8) | (0x70 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 24) & 0xf))), // r23
   bootloader__do_spm_magic_exitstrategy(0xf4a1), // brne +20
   (((0x30 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 20) & 0xf))<<8) | (0x60 | ((HAVE_SPMINTEREFACE_MAGICVALUE >> 16) & 0xf))), // r22
@@ -461,7 +461,8 @@ const uint16_t bootloader__do_spm[15] BOOTLIBLINK = {
 #endif
   0x2dec, 0x2dfd, 0xb6b7, 0xfcb0, 0xcffd, 0xbf27, 0x95e8, 0xb6b7,
   0xfcb0, 0xcffd, 0xe121, 0xb6b7, 0xfcb6, 0xcff4, 0x9508,
-  0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
+  0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  0xffff, 0xffff, 0xffff, 0xffff
 };
 
 /*
