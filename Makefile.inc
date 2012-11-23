@@ -9,7 +9,7 @@ F_CPU = 16000000
 DEVICE = atmega8
 
 # where the updating firmware should be located (starting address)
-FLASHADDRESS = 0x0000
+FLASHADDRESS = 0xC00
 
 # some MCU independend defines...
 #...will be extended within MCU dependend configuration below...

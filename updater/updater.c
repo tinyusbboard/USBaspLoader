@@ -7,11 +7,11 @@
 
 // activate updaters full set of features
 #ifndef CONFIG_UPDATER_REDUCEWRITES
-  #define CONFIG_UPDATER_REDUCEWRITES
+//   #define CONFIG_UPDATER_REDUCEWRITES
 #endif
 
 #ifndef CONFIG_UPDATER_CLEANMEMCLEAR
-  #define CONFIG_UPDATER_CLEANMEMCLEAR
+//   #define CONFIG_UPDATER_CLEANMEMCLEAR
 #endif
 
 
@@ -276,6 +276,10 @@ int main(void)
     
     wdt_disable();
     cli();
+    DDRD = (1<<PD5) | (1<<PD3);
+    DDRB = (1<<PB0) | (1<<PB1);
+    
+    PORTD = (1<<PD5);
 
     // check if firmware would change...
     buffer[0]=0;
@@ -332,7 +336,8 @@ int main(void)
       }
 
 
-
+      PORTB = (1<<PB1);
     }
 
+    PORTB |= (1<<PB0);
 }
