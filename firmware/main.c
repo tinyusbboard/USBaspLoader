@@ -182,21 +182,20 @@ static const uchar  signatureBytes[4] = {
 static void (*nullVector)(void) __attribute__((__noreturn__));
 #endif
 
-static void __attribute__((__noreturn__)) leaveBootloader()
-{
 #if (USE_EXCESSIVE_ASSEMBLER) && (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__))
+static void __attribute__((naked)) __attribute__((__noreturn__)) leaveBootloader(void);
+static void leaveBootloader(void)
+{
 asm  volatile  (
   "cli\n\t"
-  "clr		r30\n\t"
   "sbi		%[usbddr],	%[usbminus]\n\t"  
   "cbi		%[port],	%[bit]\n\t"
-  "out		%[usbintrenab],	r30\n\t"
-  "out		%[usbintrcfg],	r30\n\t"
+  "out		%[usbintrenab],	__zero_reg__\n\t"
+  "out		%[usbintrcfg],	__zero_reg__\n\t"
   "ldi		r31,		%[ivce]\n\t"
   "out		%[mygicr],	r31\n\t"
-  "out		%[mygicr],	r30\n\t"  
-  "clr		r31\n\t"
-  "icall\n\t"
+  "out		%[mygicr],	__zero_reg__\n\t"  
+  "rjmp		nullVector\n\t"
   :
   : [port]        "I" (_SFR_IO_ADDR(PIN_PORT(JUMPER_PORT))),
     [bit]         "I" (PIN(JUMPER_PORT, JUMPER_BIT)),
@@ -209,6 +208,9 @@ asm  volatile  (
 );
 /* TODO: compiler will put an unnecessary "ret" at this end ! */
 #else
+static void __attribute__((__noreturn__)) leaveBootloader(void);
+static void leaveBootloader(void)
+{
     DBG1(0x01, 0, 0);
     cli();
     usbDeviceDisconnect();
