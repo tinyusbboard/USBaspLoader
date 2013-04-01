@@ -167,7 +167,7 @@ these macros are defined, the boot loader usees them.
  */
 
 /* all boards should use a magic to make it safe to confuse updatefiles :-)  */
-#define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe65a980
+#define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe9a5680 /* This is Rev3!! / Rev2 was 0xfe65a980 */
 /* If this feature is enabled (value != 0), the configured 32bit value is 
  * used as a magic value within spminterface. "bootloader__do_spm" will check
  * additional four (4) registers for this value and only proceed, if they contain
