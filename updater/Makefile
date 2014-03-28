@@ -76,6 +76,7 @@ updater.asm: updater.elf $(DEPENDS)
 
 updater.hex: updater.elf updater.asm $(DEPENDS)
 	$(OBC) -j .text -j .data -O ihex updater.elf updater.hex
+	$(OBC) -j .text -j .data -O binary updater.elf updater.raw
 	$(ECHO) "."
 	$(ECHO) "."
 	$(SIZ) updater.elf
@@ -88,6 +89,7 @@ clean:
 	$(RM) usbasploader.o
 	$(RM) updater.o
 	$(RM) usbasploader.raw
+	$(RM) updater.raw
 	$(RM) updater.hex
 	$(RM) updater.asm
 	$(RM) updater.elf

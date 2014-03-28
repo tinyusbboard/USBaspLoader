@@ -12,7 +12,7 @@ DEVICE = atmega8
 FLASHADDRESS = 0x0000
 
 # use any fix (ATxmega compatible) crc32, uncomment to disable feature or set automatically with value "0"
-;UPDATECRC32  = 0
+UPDATECRC32  = 0
 
 # some MCU independent defines...
 #...will be extended within MCU dependend configuration below...

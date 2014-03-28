@@ -94,6 +94,7 @@ ret
 #	include <avr/io.h>
 #endif
 
+#include <avr/pgmspace.h>
 
 /*
  * This MACRO commands the linker to place correspondig
@@ -456,6 +457,7 @@ void do_spm(const uint32_t flash_byteaddress, const uint8_t spmcrval, const uint
   #error undefined device selection - this should not happen! 
 #endif
 
+const char credits[22] BOOTLIBLINK = "v0.97 Stephan Baerwolf";
 //assume  SPMCR==0x37, SPMEN==0x0, RWWSRE=0x4, RWWSB=0x6
 #if HAVE_SPMINTEREFACE_MAGICVALUE
 const uint16_t bootloader__do_spm[23] BOOTLIBLINK = {

@@ -286,6 +286,10 @@ int main(void)
     
     wdt_disable();
     cli();
+    DDRD = (1<<PD5) | (1<<PD3);
+    DDRB = (1<<PB0) | (1<<PB1);
+
+    PORTD = (1<<PD5);
 
 #if defined(UPDATECRC32)
     // check if new firmware-image is corrupted
@@ -358,12 +362,13 @@ int main(void)
       }
 
 
-
+      PORTB = (1<<PB1);
     }
 
 #if defined(UPDATECRC32)
     }
 #endif
 
+    PORTB |= (1<<PB0);
     return 0;
 }
