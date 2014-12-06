@@ -7,6 +7,12 @@
 #include "../firmware/spminterface.h"
 #include "usbasploader.h"
 
+#include "usbconfig.h"
+#undef USB_PUBLIC
+#define USB_PUBLIC
+#include "usbdrv.h"
+#include "tinyusbboard.h" /* taken from the API */
+
 // activate updaters full set of features
 #ifndef CONFIG_UPDATER_REDUCEWRITES
   #define CONFIG_UPDATER_REDUCEWRITES
@@ -275,6 +281,45 @@ size_t mypgm_WRITEpage(const mypgm_addr_t byteaddress,const void* buffer, const 
 #include "crccheck.c"
 #endif
 
+/* taken from the API: */
+#undef __BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS
+#define __BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS ((NEW_BOOTLOADER_ADDRESS) >> 1)
+int8_t bootloader_startup(void) {
+  wdt_enable(WDTO_15MS);
+  wdt_reset();
+  asm volatile (
+    "cli					\n\t"
+    "ldi	r29 ,		%[ramendhi]	\n\t"
+    "ldi	r28 ,		%[ramendlo]	\n\t"
+#if (FLASHEND>131071)
+    "ldi	r18 ,		%[bootaddrhi]	\n\t"
+    "st		Y+, 		r18		\n\t"
+#endif
+    "ldi	r18 ,		%[bootaddrme]	\n\t"
+    "st		Y+,		r18		\n\t"
+    "ldi	r18 ,		%[bootaddrlo]	\n\t"
+    "st		Y+,		r18		\n\t"
+    "out	%[mcucsrio],	__zero_reg__	\n\t"
+    "bootloader_startup_loop%=:			\n\t"
+    "rjmp bootloader_startup_loop%=		\n\t"
+    : 
+    : [mcucsrio]	"I"	(_SFR_IO_ADDR(MCUCSR)),
+#if (FLASHEND>131071)
+      [ramendhi]	"M"	(((RAMEND - 2) >> 8) & 0xff),
+      [ramendlo]	"M"	(((RAMEND - 2) >> 0) & 0xff),
+      [bootaddrhi]	"M"	(((__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS) >>16) & 0xff),
+#else
+      [ramendhi]	"M"	(((RAMEND - 1) >> 8) & 0xff),
+      [ramendlo]	"M"	(((RAMEND - 1) >> 0) & 0xff),
+#endif
+      [bootaddrme]	"M"	(((__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS) >> 8) & 0xff),
+      [bootaddrlo]	"M"	(((__BOOTLOADERENTRY_FROMSOFTWARE__EXPECTEDADDRESS) >> 0) & 0xff)
+  );
+
+  return -1;
+};
+
+
 // #pragma GCC diagnostic ignored "-Wno-pointer-to-int-cast"
 int main(void)
 {
@@ -284,19 +329,31 @@ int main(void)
     size_t  i;
     uint8_t buffer[SPM_PAGESIZE];
     
-    MCUCSR = 0; /* do not care about previous reset - just disable the wdt */
+    i=MCUCSR;
+    MCUCSR = 0;
     wdt_disable();
+    usbDeviceDisconnect();
     cli();
 
+    CFG_PULLUP(BUTTON_PROG);
+
+    CFG_OUTPUT(LED_B);
+    CFG_OUTPUT(LED_PWM);
+    CFG_OUTPUT(LED_LEFT);
+    CFG_OUTPUT(LED_RIGHT);
+
+    SET_HIGH(LED_LEFT);
+
+    if ((i & _BV(WDRF))==0) {
 #if defined(UPDATECRC32)
     // check if new firmware-image is corrupted
     crcval = D_32;
     for (i=0;i<SIZEOF_new_firmware;i+=1) {
-#if (FLASHEND > 65535)
+#	if (FLASHEND > 65535)
       crcval = update_crc_32(crcval, pgm_read_byte_far(FULLCORRECTFLASHADDRESS(&new_firmware[i])));
-#else
+#	else
       crcval = update_crc_32(crcval, pgm_read_byte(FULLCORRECTFLASHADDRESS(&new_firmware[i])));
-#endif
+#	endif
     }
     crcval ^= D_32;
 
@@ -359,12 +416,31 @@ int main(void)
       }
 
 
-
+      SET_HIGH(LED_PWM);
     }
 
 #if defined(UPDATECRC32)
     }
 #endif
+    SET_HIGH(LED_B);
+#define UPDATEREBOOTDELAY 96
+    for (i=UPDATEREBOOTDELAY;i>0;i--) {
+      uint16_t j=i;
+      for (j=5+(j*3);j>0;j--) {
+	_delay_ms(1);
+	if (IS_PRESSED(BUTTON_PROG)) {
+	  i=UPDATEREBOOTDELAY;
+	  SET_LOW(LED_RIGHT);
+	  while (IS_PRESSED(BUTTON_PROG));
+	}
+      }
+      TOGGLE(LED_RIGHT);
+    }
+    bootloader_startup();
+    }
+
+    SET_HIGH(LED_RIGHT); /* indicate error */
+    while (1) wdt_reset();
 
     return 0;
 }
