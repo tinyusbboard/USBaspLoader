@@ -69,9 +69,19 @@ these macros are defined, the boot loader usees them.
  * So abstract "USB_CFG_DPLUS_BIT" to this one here.
  */
 
+#ifdef TINYUSBBOARD_REV1
+#	ifndef TINYUSBBOARD_REV2
+#		define TINYUSBBOARD_REV2
+#	endif
+#endif
+
 #ifndef USB_CFG_DMINUS_BIT
-  /* This is Revision 3 and later (where PD6 and PD7 were swapped */
-  #define USB_CFG_DMINUS_BIT      7    /* Rev.2 and previous was 6 */
+#	ifdef TINYUSBBOARD_REV2
+    #define USB_CFG_DMINUS_BIT      6
+#	else
+    /* This is Revision 3 and later (where PD6 and PD7 were swapped */
+    #define USB_CFG_DMINUS_BIT      7    /* Rev.2 and previous was 6 */
+#	endif
 #endif
 /* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
  * This may be any bit in the port.
@@ -90,8 +100,12 @@ these macros are defined, the boot loader usees them.
  * jumper is connected to this port
  */
 #ifndef JUMPER_BIT
-  /* This is Revision 3 and later (where PD6 and PD7 were swapped */
-  #define JUMPER_BIT           6       /* Rev.2 and previous was 7 */
+#	ifdef TINYUSBBOARD_REV2
+    #define JUMPER_BIT           7
+#	else
+    /* This is Revision 3 and later (where PD6 and PD7 were swapped */
+    #define JUMPER_BIT           6       /* Rev.2 and previous was 7 */
+#	endif
 #endif
 /* 
  * jumper is connected to this bit in port "JUMPER_PORT", active low
@@ -167,7 +181,29 @@ these macros are defined, the boot loader usees them.
  */
 
 /* all boards should use a magic to make it safe to confuse updatefiles :-)  */
-#define HAVE_SPMINTEREFACE_MAGICVALUE    0
+#ifdef TINYUSBBOARD_REV2
+#	if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe65a980
+#	else
+#		error tinyUSBboard rev2 only is implemented for ATmega8, yet
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0
+#	endif
+#else
+#	if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe9a5680
+#	elif defined (__AVR_ATmega328P__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe9a5680
+#	elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88P__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe9a5682
+#	elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168P__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe9a5683
+#	elif defined (__AVR_ATmega328__)
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0xfe6a5984
+#	else
+#		warning unknown tinyUSBboard
+#		define HAVE_SPMINTEREFACE_MAGICVALUE    0
+#	endif
+#endif
 /* If this feature is enabled (value != 0), the configured 32bit value is 
  * used as a magic value within spminterface. "bootloader__do_spm" will check
  * additional four (4) registers for this value and only proceed, if they contain

@@ -164,7 +164,15 @@
 /* define this macro to 1 if you want the function usbMeasureFrameLength()
  * compiled in. This function can be used to calibrate the AVR's RC oscillator.
  */
-#define USB_USE_FAST_CRC                0
+#if (FLASHEND > 16384)
+#	define USB_USE_FAST_CRC                1
+#else
+#	if defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
+#		define USB_USE_FAST_CRC                1
+#	else
+#		define USB_USE_FAST_CRC                0
+#	endif
+#endif
 /* The assembler module has two implementations for the CRC algorithm. One is
  * faster, the other is smaller. This CRC routine is only used for transmitted
  * messages where timing is not critical. The faster routine needs 31 cycles

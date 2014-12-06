@@ -12,7 +12,13 @@ DEVICE = atmega8
 FLASHADDRESS = 0x0000
 
 # use any fix (ATxmega compatible) crc32, uncomment to disable feature or set automatically with value "0"
-;UPDATECRC32  = 0
+UPDATECRC32  = 0
+
+# tinyUSBboard revision to build
+DEFINES += -DTINYUSBBOARD_REV3
+
+# build bootloader with internal credits - needs avr-gcc version 4.8.1 and 16MHz
+DEFINES += -DTINYUSBBOARD_WITHCREDITS
 
 # some MCU independent defines...
 #...will be extended within MCU dependend configuration below...
